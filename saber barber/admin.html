@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Saber Barber — Espace Équipe</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200;300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="css/stars.css"/>
+  <link rel="stylesheet" href="css/navbar.css"/>
+  <link rel="stylesheet" href="css/admin.css"/>
+  <link rel="icon" href="assets/images/logo.png"/>
+</head>
+<body>
+
+<canvas id="starsCanvas"></canvas>
+<div id="loading"><img src="assets/images/logo.png" alt="Saber Barber"/></div>
+
+<nav class="navbar" id="navbar">
+  <div class="nav-logo" onclick="goTo('index.html')">
+    <img src="assets/images/logo.png" alt="Saber Barber"/>
+  </div>
+  <div class="nav-links" id="navLinks">
+    <a onclick="goTo('index.html');closeNav()">Accueil</a>
+    <a onclick="goTo('barbers.html');closeNav()">L'Équipe</a>
+  </div>
+  <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+</nav>
+
+<!-- LOGIN SECTION -->
+<div id="loginSection" class="admin-wrap">
+  <div class="admin-box">
+    <div class="admin-box-logo"><img src="assets/images/logo.png" alt="Saber Barber"/></div>
+    <h2>Espace Équipe</h2>
+    <p>Accès réservé aux membres de l'équipe Saber Barber</p>
+    <div class="form-group" style="text-align:left;"><label>Nom d'utilisateur</label><input type="text" id="loginUser" placeholder="Votre identifiant"/></div>
+    <div class="form-group" style="text-align:left;"><label>Mot de passe</label><input type="password" id="loginPass" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+    <button class="btn-glow" onclick="doLogin()" style="width:100%;justify-content:center;border-radius:4px;margin-top:4px;">
+      <svg viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+      Se Connecter
+    </button>
+    <div class="login-err" id="loginErr">Identifiants incorrects. Veuillez réessayer.</div>
+    <div style="margin-top:22px;">
+      <button class="back-btn" onclick="goTo('index.html')" style="justify-content:center;width:100%;">← Retour au site</button>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD SECTION -->
+<div id="dashSection" style="display:none;">
+  <div class="dash-wrap">
+    <div class="dash-header">
+      <div>
+        <div class="dash-greeting" id="dashGreeting">Bonjour,</div>
+        <div class="dash-title">Mon Espace</div>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">Déconnexion</button>
+    </div>
+
+    <div class="dash-tabs">
+      <button class="dash-tab active" onclick="switchTab('schedule')">📅 Mon Horaire</button>
+      <button class="dash-tab" onclick="switchTab('appointments')">📋 Mes Rendez-vous</button>
+    </div>
+
+    <!-- HORAIRE -->
+    <div id="tab-schedule" class="tab-pane active">
+      <div class="sched-label">Disponibilité Générale</div>
+      <div class="avail-row">
+        <label class="toggle"><input type="checkbox" id="availToggle" checked onchange="updateAvailLabel()"/><span class="toggle-sl"></span></label>
+        <span class="avail-label" id="availLabel">Je suis disponible</span>
+      </div>
+      <div class="divider"></div>
+      <div class="sched-label">Jours de Travail</div>
+      <div class="sched-sub">Cliquez sur les jours où vous travaillez habituellement.</div>
+      <div class="days-grid" id="daysGrid"></div>
+      <div class="sched-label">Heures de Travail</div>
+      <div class="hours-row" style="margin-top:12px;">
+        <label>Début</label><input type="time" id="startTime" value="08:00"/>
+        <label>Fin</label><input type="time" id="endTime" value="21:00"/>
+      </div>
+      <div class="divider"></div>
+      <div class="sched-label">Jours de Congé / Absences</div>
+      <div class="sched-sub">Ajoutez des dates spécifiques où vous serez absent.</div>
+      <div class="off-add-row">
+        <input type="date" id="offDayInput"/>
+        <button class="btn-glow" onclick="addOffDay()" style="padding:12px 20px;border-radius:4px;font-size:0.7rem;">+ Ajouter</button>
+      </div>
+      <div class="off-tags" id="offTags"></div>
+      <div class="save-row">
+        <button class="btn-glow" onclick="saveSchedule()" style="border-radius:4px;">
+          <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Sauvegarder Mon Horaire
+        </button>
+      </div>
+      <div class="save-msg" id="saveMsg">✦ Horaire sauvegardé avec succès !</div>
+    </div>
+
+    <!-- RENDEZ-VOUS -->
+    <div id="tab-appointments" class="tab-pane">
+      <div class="sched-label" style="margin-bottom:22px;">Prochains Rendez-vous</div>
+      <div style="overflow-x:auto;">
+        <table class="appts-table">
+          <thead><tr><th>Date</th><th>Heure</th><th>Client</th><th>Téléphone</th><th>Courriel</th><th>Service</th></tr></thead>
+          <tbody id="apptsBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer style="position:relative;z-index:1;">
+  <div style="text-align:center;"><div class="footer-bottom-text">© 2026 Saber Barber — Espace Équipe</div></div>
+</footer>
+
+<script src="js/utils.js"></script>
+<script src="js/stars.js"></script>
+<script src="js/navbar.js"></script>
+<script src="js/app.js"></script>
+<script src="js/admin.js"></script>
+<script>
+window.addEventListener('load',()=>{
+  initStars(); initNavbar(); hideLoading(800); checkSession();
+});
+</script>
+</body>
+</html>
