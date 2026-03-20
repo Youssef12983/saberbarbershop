@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Saber Barber — Accueil</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200;300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="css/stars.css"/>
+  <link rel="stylesheet" href="css/navbar.css"/>
+  <link rel="stylesheet" href="css/hero.css"/>
+  <link rel="stylesheet" href="css/team.css"/>
+  <link rel="icon" href="assets/images/logo.png"/>
+
+  <style>
+  /* ══════════════════════════════════════
+     CINEMATIC INTRO / LOADING SCREEN
+  ══════════════════════════════════════ */
+  #intro {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background: #0a0a0a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  /* Stars canvas inside intro */
+  #introCanvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0.5;
+  }
+
+  /* Horizontal line that sweeps across */
+  .intro-scan-line {
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(201,168,76,0.8), transparent);
+    animation: scanLine 1.2s ease 0.3s forwards;
+  }
+  @keyframes scanLine {
+    0%   { top: 0%;   left: -100%; opacity: 0; }
+    10%  { opacity: 1; }
+    100% { top: 100%; left: 0%;   opacity: 0; }
+  }
+
+  /* Corner frames */
+  .intro-corner {
+    position: absolute;
+    width: 50px; height: 50px;
+    opacity: 0;
+    animation: cornerIn 0.5s ease forwards;
+  }
+  .intro-corner svg { stroke: rgba(201,168,76,0.5); fill: none; stroke-width: 1.5; }
+  .intro-corner-tl { top: 30px; left: 30px; animation-delay: 0.5s; }
+  .intro-corner-tr { top: 30px; right: 30px; transform: scaleX(-1); animation-delay: 0.6s; }
+  .intro-corner-bl { bottom: 30px; left: 30px; transform: scaleY(-1); animation-delay: 0.7s; }
+  .intro-corner-br { bottom: 30px; right: 30px; transform: scale(-1); animation-delay: 0.8s; }
+  @keyframes cornerIn { to { opacity: 1; } }
+
+  /* Center content */
+  .intro-center {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  /* Top label */
+  .intro-label {
+    font-family: 'Oswald', sans-serif;
+    font-size: 0.58rem;
+    letter-spacing: 0.55em;
+    text-transform: uppercase;
+    color: rgba(201,168,76,0.6);
+    opacity: 0;
+    transform: translateY(-8px);
+    animation: fadeInDown 0.6s ease 0.8s forwards;
+    margin-bottom: 32px;
+  }
+
+  /* Logo */
+  .intro-logo {
+    opacity: 0;
+    transform: scale(0.85);
+    animation: logoIn 1s cubic-bezier(0.22,1,0.36,1) 1s forwards;
+    margin-bottom: 32px;
+  }
+  .intro-logo img {
+    height: 180px;
+    width: auto;
+    filter: drop-shadow(0 0 60px rgba(201,168,76,0.2));
+  }
+
+  @keyframes logoIn {
+    0%   { opacity: 0; transform: scale(0.85); filter: blur(12px); }
+    50%  { filter: blur(0); }
+    100% { opacity: 1; transform: scale(1); filter: blur(0); }
+  }
+
+  /* Gold line under logo */
+  .intro-line {
+    width: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold, #c9a84c), transparent);
+    animation: lineGrow 0.8s ease 1.8s forwards;
+    margin-bottom: 28px;
+  }
+  @keyframes lineGrow { to { width: 200px; } }
+
+  /* Name text */
+  .intro-name {
+    font-family: 'Oswald', sans-serif;
+    font-size: clamp(1.8rem, 4vw, 3rem);
+    font-weight: 200;
+    letter-spacing: 0.6em;
+    text-transform: uppercase;
+    color: #f5f0e8;
+    opacity: 0;
+    animation: fadeInUp 0.7s ease 2.2s forwards;
+    margin-bottom: 8px;
+  }
+
+  /* Tagline */
+  .intro-tagline {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 0.9rem;
+    letter-spacing: 0.15em;
+    color: rgba(201,168,76,0.55);
+    opacity: 0;
+    animation: fadeInUp 0.7s ease 2.5s forwards;
+    margin-bottom: 48px;
+  }
+
+  /* Progress bar */
+  .intro-progress-wrap {
+    width: 200px;
+    height: 1px;
+    background: rgba(255,255,255,0.06);
+    position: relative;
+    overflow: hidden;
+    opacity: 0;
+    animation: fadeInUp 0.5s ease 2.7s forwards;
+  }
+  .intro-progress-bar {
+    position: absolute;
+    top: 0; left: 0;
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, transparent, var(--gold, #c9a84c));
+    animation: progressFill 1s ease 3s forwards;
+  }
+  @keyframes progressFill { to { width: 100%; } }
+
+  /* Year tag */
+  .intro-year {
+    font-family: 'Oswald', sans-serif;
+    font-size: 0.52rem;
+    letter-spacing: 0.3em;
+    color: #2a2a2a;
+    text-transform: uppercase;
+    opacity: 0;
+    animation: fadeInUp 0.5s ease 3s forwards;
+    margin-top: 14px;
+  }
+
+  /* OUTRO — slide up to reveal site */
+  #intro.outro {
+    animation: introOutro 0.9s cubic-bezier(0.76,0,0.24,1) forwards;
+  }
+  @keyframes introOutro {
+    0%   { transform: translateY(0);     opacity: 1; }
+    100% { transform: translateY(-100%); opacity: 1; }
+  }
+
+  /* Shared */
+  @keyframes fadeInUp   { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeInDown { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════
+     CINEMATIC INTRO SCREEN
+══════════════════════════════════ -->
+<div id="intro">
+  <canvas id="introCanvas"></canvas>
+
+  <!-- Scan line effect -->
+  <div class="intro-scan-line"></div>
+
+  <!-- Corner decorations -->
+  <div class="intro-corner intro-corner-tl"><svg viewBox="0 0 50 50"><polyline points="0,25 0,0 25,0"/></svg></div>
+  <div class="intro-corner intro-corner-tr"><svg viewBox="0 0 50 50"><polyline points="0,25 0,0 25,0"/></svg></div>
+  <div class="intro-corner intro-corner-bl"><svg viewBox="0 0 50 50"><polyline points="0,25 0,0 25,0"/></svg></div>
+  <div class="intro-corner intro-corner-br"><svg viewBox="0 0 50 50"><polyline points="0,25 0,0 25,0"/></svg></div>
+
+  <!-- Center content -->
+  <div class="intro-center">
+    <div class="intro-label">✦ Bienvenue ✦</div>
+    <div class="intro-logo">
+      <img src="assets/images/logo.png" alt="Saber Barber"/>
+    </div>
+    <div class="intro-line"></div>
+    <div class="intro-name">Saber Barber</div>
+    <div class="intro-tagline">L'art du soin, élevé à la perfection</div>
+    <div class="intro-progress-wrap">
+      <div class="intro-progress-bar"></div>
+    </div>
+    <div class="intro-year">© 2026 — Best in Town MTL</div>
+  </div>
+</div>
+
+<canvas id="starsCanvas"></canvas>
+
+<!-- NAVBAR -->
+<nav class="navbar" id="navbar">
+  <div class="nav-logo" onclick="goTo('index.html')">
+    <img src="assets/images/logo.png" alt="Saber Barber"/>
+  </div>
+  <div class="nav-links" id="navLinks">
+    <a onclick="goTo('index.html');closeNav()">Accueil</a>
+    <a onclick="goTo('barbers.html');closeNav()">L'Équipe</a>
+    <a href="#faq" onclick="closeNav()">FAQ</a>
+    <a href="#location" onclick="closeNav()">Localisation</a>
+    <a onclick="goTo('admin.html');closeNav()" class="nav-admin">⚙ Équipe</a>
+    <a href="barbers.html" class="btn-glow" style="padding:10px 26px;font-size:0.68rem;">
+      <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+      Réserver
+    </a>
+  </div>
+  <div class="hamburger" id="hamburger"><span></span><span></span><span></span></div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-video-wrap">
+    <video autoplay loop muted playsinline>
+      <source src="assets/vedio/hero.mp4" type="video/mp4"/>
+    </video>
+  </div>
+
+  <!-- Corner decorations -->
+  <div class="hero-corner hero-corner-tl"><svg viewBox="0 0 40 40"><polyline points="0,20 0,0 20,0"/></svg></div>
+  <div class="hero-corner hero-corner-tr"><svg viewBox="0 0 40 40"><polyline points="0,20 0,0 20,0"/></svg></div>
+  <div class="hero-corner hero-corner-bl"><svg viewBox="0 0 40 40"><polyline points="0,20 0,0 20,0"/></svg></div>
+  <div class="hero-corner hero-corner-br"><svg viewBox="0 0 40 40"><polyline points="0,20 0,0 20,0"/></svg></div>
+
+  <div class="hero-line-top"></div>
+  <div class="hero-line-bottom"></div>
+
+  <div class="hero-content">
+    <div class="hero-pre-label">✦ Barbier de confiance ✦</div>
+    <div class="hero-logo">
+      <img src="assets/images/logo.png" alt="Saber Barber"/>
+    </div>
+    <div class="hero-divider"></div>
+    <div class="hero-title">
+      <span class="hero-title-word">On</span>
+      <span class="hero-title-word">élève</span>
+      <span class="hero-title-word">les</span>
+      <span class="hero-title-word">standards</span>
+    </div>
+    <div class="hero-btns">
+      <a href="barbers.html" class="btn-glow">
+        <svg viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        Prendre rendez-vous
+      </a>
+      <a href="#equipe" class="btn-glow btn-glow-outline">Notre équipe →</a>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <div class="hero-scroll-line"></div>
+    <span>Défiler</span>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-section">
+  <div class="marquee-track">
+    <div class="marquee-item"><span class="marquee-word">Saber Barber</span><div class="marquee-dot"></div></div>
+    <div class="marquee-item"><span class="marquee-word">Précision</span><div class="marquee-dot"></div></div>
+    <div class="marquee-item"><span class="marquee-word">Excellence</span><div class="marquee-dot"></div></div>
+    <div class="marquee-item"><span class="marquee-word">Style</span><div class="marquee-dot"></div></div>
+    <div class="marquee-item"><span class="marquee-word">Expertise</span><div class="marquee-dot"></div></div>
+    <div class="marquee-item"><span class="marquee-word">Qualité</span><div class="marquee-dot"></div></div>
+    <div class="marquee-item"><span class="marquee-word">Confiance</span><div class="marquee-dot"></div></div>
+    <div class="marquee-item"><span class="marquee-word">Saber Barber</span><div class="marquee-dot"></div></div>
+    <div class="marquee-item"><span class="marquee-word">Précision</span><div class="marquee-dot"></div></div>
+    <div class="marquee-item"><span class="marquee-word">Excellence</span><div class="marquee-dot"></div></div>
+    <div class="marquee-item"><span class="marquee-word">Style</span><div class="marquee-dot"></div></div>
+    <div class="marquee-item"><span class="marquee-word">Expertise</span><div class="marquee-dot"></div></div>
+    <div class="marquee-item"><span class="marquee-word">Qualité</span><div class="marquee-dot"></div></div>
+    <div class="marquee-item"><span class="marquee-word">Confiance</span><div class="marquee-dot"></div></div>
+  </div>
+</div>
+
+<!-- GALERIE -->
+<section style="padding:80px 0;background:var(--black-2);position:relative;z-index:1;" class="reveal">
+  <div style="max-width:1300px;margin:0 auto;padding:0 60px;">
+    <div class="section-label">✦ La Galerie</div>
+    <div class="section-title">L'EXPÉRIENCE<br/><em>SABER</em></div>
+    <p style="color:var(--muted);font-size:0.83rem;margin-bottom:44px;line-height:1.7;max-width:480px;">
+      Des barbiers qualifiés, un service maîtrisé, une expérience au-delà du standard.
+    </p>
+    <div class="photos-scroll">
+      <div class="photo-card"><img src="assets/images/photo1.png" alt="Saber Barber"/></div>
+      <div class="photo-card"><img src="assets/images/photo2.png" alt="Saber Barber"/></div>
+      <div class="photo-card"><img src="assets/images/photo3.png" alt="Saber Barber"/></div>
+      <div class="photo-card"><img src="assets/images/photo4.png" alt="Saber Barber"/></div>
+      <div class="photo-card"><img src="assets/images/photo5.png" alt="Saber Barber"/></div>
+      <div class="photo-card"><img src="assets/images/photo6.png" alt="Saber Barber"/></div>
+
+      <div class="photo-card photo-placeholder"><span>+ Photo</span></div>
+      <div class="photo-card photo-placeholder"><span>+ Photo</span></div>
+      <div class="photo-card photo-placeholder"><span>+ Photo</span></div>
+      <div class="photo-card photo-placeholder"><span>+ Photo</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ÉQUIPE -->
+<section class="team-section reveal" id="equipe">
+  <div class="team-inner">
+    <div class="section-label" style="text-align:center">✦ Notre Équipe</div>
+    <h2 class="team-title">LES VISAGES<br/><em style="color:var(--gold);font-style:normal;">DU SALON</em></h2>
+    <div class="team-grid" id="teamGrid"></div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section style="padding:90px 0;background:var(--black-2);position:relative;z-index:1;" class="reveal" id="faq">
+  <div style="max-width:860px;margin:0 auto;padding:0 60px;">
+    <div class="section-label">✦ Questions Fréquentes</div>
+    <h2 class="section-title">CE QUE TU<br/><em>DOIS SAVOIR</em></h2>
+    <div class="faq-item">
+      <div class="faq-q"><h3>Quels sont vos horaires d'ouverture ?</h3><div class="faq-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div></div>
+      <div class="faq-a"><p>Notre équipe est à votre service tous les jours, du lundi au dimanche, de 8h00 à 21h00.</p></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q"><h3>Puis-je venir sans rendez-vous ?</h3><div class="faq-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div></div>
+      <div class="faq-a"><p>Les rendez-vous sont prioritaires. En cas de disponibilité nous vous accueillons sans réservation, mais pour éviter toute attente nous recommandons de réserver à l'avance.</p></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q"><h3>Quels services proposez-vous ?</h3><div class="faq-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div></div>
+      <div class="faq-a"><p>Coupes classiques, tailles de barbe, soins complets et rasages au rasoir traditionnel. Pour tous les styles et toutes les générations.</p></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q"><h3>Comment choisir mon barbier ?</h3><div class="faq-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div></div>
+      <div class="faq-a"><p>Visitez la page "L'Équipe", consultez les profils et réservez directement selon les disponibilités en temps réel.</p></div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q"><h3>Quels modes de paiement acceptez-vous ?</h3><div class="faq-icon"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></div></div>
+      <div class="faq-a"><p>Espèces, Débit, Visa, Mastercard, Apple Pay et Google Pay.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- LOCALISATION -->
+<section style="padding:90px 0;background:var(--black);position:relative;z-index:1;" class="reveal" id="location">
+  <div style="max-width:1300px;margin:0 auto;padding:0 60px;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;">
+    <div>
+      <div class="section-label">✦ Nous Trouver</div>
+      <h2 class="section-title">RETROUVE-NOUS<br/><em>AU SALON</em></h2>
+      <div style="display:flex;flex-direction:column;gap:22px;">
+        <div style="display:flex;gap:14px;align-items:flex-start;">
+          <div style="width:38px;height:38px;border:1px solid rgba(201,168,76,0.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="14" height="14" viewBox="0 0 24 24" fill="var(--gold)"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg></div>
+          <div><div style="font-family:'Oswald',sans-serif;font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;">Adresse</div><div style="font-size:0.82rem;color:var(--muted);line-height:1.7;">7103 Rue Drolet<br/>Montréal, QC</div></div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:flex-start;">
+          <div style="width:38px;height:38px;border:1px solid rgba(201,168,76,0.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+          <div><div style="font-family:'Oswald',sans-serif;font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;">Horaires</div><div style="font-size:0.82rem;color:var(--muted);">Ouvert 7j/7 · 9h00 – Minuit</div></div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:flex-start;">
+          <div style="width:38px;height:38px;border:1px solid rgba(201,168,76,0.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.18 19.79 19.79 0 0118.18 2a2 2 0 012 1.72 12.84 12.84 0 00-.53 2.28c0 1.06.07 1.7-.53 2.36L17 10.7a16 16 0 006.29 6.29l2.35-2.47c.66-.6 1.3-.53 2.36-.53z"/></svg></div>
+          <div><div style="font-family:'Oswald',sans-serif;font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;">Téléphone</div><div style="font-size:0.82rem;color:var(--muted);">Votre numéro ici</div></div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:flex-start;">
+          <div style="width:38px;height:38px;border:1px solid rgba(201,168,76,0.25);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></div>
+          <div><div style="font-family:'Oswald',sans-serif;font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold);margin-bottom:4px;">Instagram</div><div style="font-size:0.82rem;color:var(--muted);">@saberbarbershop_mtl</div></div>
+        </div>
+      </div>
+    </div>
+    <div style="background:var(--black-2);border:1px solid rgba(201,168,76,0.08);aspect-ratio:4/3;overflow:hidden;">
+      <iframe
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2795.5!2d-73.5901!3d45.5231!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x4cc919c6b7!2s7103+Rue+Drolet%2C+Montr%C3%A9al%2C+QC!5e0!3m2!1sfr!2sca!4v1"
+        width="100%" height="100%" style="border:0;filter:grayscale(1) contrast(1.1) brightness(0.85);"
+        allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+      </iframe>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE BIG -->
+<div class="marquee-big-section">
+  <div class="marquee-big-track">
+    <div class="marquee-big-item">SABER BARBER</div><div class="marquee-big-item">✦</div>
+    <div class="marquee-big-item">PRÉCISION</div><div class="marquee-big-item">✦</div>
+    <div class="marquee-big-item">EXCELLENCE</div><div class="marquee-big-item">✦</div>
+    <div class="marquee-big-item">STYLE</div><div class="marquee-big-item">✦</div>
+    <div class="marquee-big-item">SABER BARBER</div><div class="marquee-big-item">✦</div>
+    <div class="marquee-big-item">PRÉCISION</div><div class="marquee-big-item">✦</div>
+    <div class="marquee-big-item">EXCELLENCE</div><div class="marquee-big-item">✦</div>
+    <div class="marquee-big-item">STYLE</div><div class="marquee-big-item">✦</div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-logo"><img src="assets/images/logo.png" alt="Saber Barber"/></div>
+        <div class="footer-tagline">On élève les standards</div>
+      </div>
+      <div class="footer-links">
+        <a href="index.html">Accueil</a>
+        <a href="barbers.html">L'Équipe</a>
+        <a href="#faq">FAQ</a>
+        <a href="#location">Localisation</a>
+        <a href="admin.html" style="color:rgba(201,168,76,0.22);font-size:0.58rem;">⚙ Espace Équipe</a>
+      </div>
+      <div class="footer-contact">
+        <a>Ouvert 7j/7 · 9h am – Minuit</a>
+        <a>7103 Rue Drolet, Montréal</a>
+        <a href="tel:4383083228">438 308 3228</a>
+        <a href="https://instagram.com/saberbarbershop_mtl" target="_blank">@saberbarbershop_mtl</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="footer-bottom-text">© 2026 Saber Barber — Tous droits réservés</div>
+      <div class="footer-bottom-text">Ouvert 7j/7</div>
+    </div>
+  </div>
+</footer>
+
+<script src="js/utils.js"></script>
+<script src="js/stars.js"></script>
+<script src="js/navbar.js"></script>
+<script src="js/app.js"></script>
+
+<script>
+/* ══ INTRO STARS (mini version inside intro) ══ */
+(function(){
+  const c = document.getElementById('introCanvas');
+  if(!c) return;
+  const ctx = c.getContext('2d');
+  c.width = window.innerWidth; c.height = window.innerHeight;
+  const stars = Array.from({length:120}, ()=>({
+    x: Math.random()*c.width, y: Math.random()*c.height,
+    r: Math.random()*1.2+0.2, op: Math.random()*0.6+0.1,
+    gold: Math.random()<0.1
+  }));
+  function drawIntroStars(){
+    ctx.clearRect(0,0,c.width,c.height);
+    stars.forEach(s=>{
+      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      ctx.fillStyle = s.gold ? `rgba(201,168,76,${s.op})` : `rgba(245,240,232,${s.op})`;
+      ctx.fill();
+    });
+  }
+  drawIntroStars();
+})();
+
+/* ══ DISMISS INTRO ══ */
+window.addEventListener('load', ()=>{
+  // Total intro duration = 4.2s then slide up
+  setTimeout(()=>{
+    const intro = document.getElementById('intro');
+    intro.classList.add('outro');
+    // After slide-up remove it
+    setTimeout(()=>{
+      intro.style.display = 'none';
+      // Now init main site
+      initStars();
+      initNavbar();
+      initFaq();
+      initScrollReveal();
+      renderTeam('teamGrid');
+    }, 900);
+  }, 4200);
+});
+</script>
+
+</body>
+</html>
